@@ -14,7 +14,7 @@
 
 using namespace std;
 
-string get_text() {
+string get_http(LPCWSTR host, LPCWSTR object, bool isHTTPS) {
 	string r;
 
 	DWORD dwSize = 0;
@@ -33,15 +33,15 @@ string get_text() {
 
 	// Specify an HTTP server.
 	if (hSession)
-		hConnect = WinHttpConnect(hSession, L"www.naver.com",
-			INTERNET_DEFAULT_HTTPS_PORT, 0);
+		hConnect = WinHttpConnect(hSession, host,
+			isHTTPS ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT, 0);
 
 	// Create an HTTP request handle.
 	if (hConnect)
-		hRequest = WinHttpOpenRequest(hConnect, L"GET", NULL,
+		hRequest = WinHttpOpenRequest(hConnect, L"GET", object,
 			NULL, WINHTTP_NO_REFERER,
 			WINHTTP_DEFAULT_ACCEPT_TYPES,
-			WINHTTP_FLAG_SECURE);
+			isHTTPS ? WINHTTP_FLAG_SECURE : 0);
 
 	// Send a request.
 	if (hRequest)
@@ -120,7 +120,7 @@ string UTF8ToANSI(string s)
 }
 
 vector<string> list_naver() {
-	string s(UTF8ToANSI(get_text()));
+	string s(UTF8ToANSI(get_http(L"www.naver.com", L"/", true)));
 
 	static regex e("<span class=\"ah_k\">(.+?)</span>");
 	regex_iterator<string::iterator> rit(s.begin(), s.end(), e);
