@@ -140,13 +140,9 @@ vector<string> list_naver() {
 // followed by newline
 string now() {
 	time_t rawtime;
-	tm tm;
-	char buffer[80];
 
 	time(&rawtime);
-	localtime_s(&tm, &rawtime);
-	asctime_s(buffer, &tm);
-	return string(buffer);
+	return string(ctime(&rawtime));
 }
 
 int _tmain(int argc, _TCHAR* argv[])
