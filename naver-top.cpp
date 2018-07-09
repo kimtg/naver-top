@@ -11,6 +11,7 @@
 #include <regex>
 #include <vector>
 #include <ctime>
+#include <memory>
 #include "winhttpget.h"
 
 using namespace std;
@@ -18,7 +19,6 @@ using namespace std;
 string UTF8ToANSI(string s)
 {
 	BSTR    bstrWide;
-	char*   pszAnsi;
 	int     nLength;
 	const char *pszCode = s.c_str();
 
@@ -28,14 +28,12 @@ string UTF8ToANSI(string s)
 	MultiByteToWideChar(CP_UTF8, 0, pszCode, strlen(pszCode) + 1, bstrWide, nLength);
 
 	nLength = WideCharToMultiByte(CP_ACP, 0, bstrWide, -1, NULL, 0, NULL, NULL);
-	pszAnsi = new char[nLength];
 
-	WideCharToMultiByte(CP_ACP, 0, bstrWide, -1, pszAnsi, nLength, NULL, NULL);
+	std::unique_ptr<char[]> pszAnsi{ new char[nLength] };
+	WideCharToMultiByte(CP_ACP, 0, bstrWide, -1, pszAnsi.get(), nLength, NULL, NULL);
 	SysFreeString(bstrWide);
 
-	string r(pszAnsi);
-	delete[] pszAnsi;
-	return r;
+	return string(pszAnsi.get());
 }
 
 vector<string> list_naver() {

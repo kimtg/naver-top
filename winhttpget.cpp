@@ -1,12 +1,12 @@
 #include <windows.h>
 #include "winhttpget.h"
+#include <memory>
 
 std::string winhttpget(LPCWSTR host, LPCWSTR object, bool isHTTPS) {
 	std::string r;
 
 	DWORD dwSize = 0;
 	DWORD dwDownloaded = 0;
-	LPSTR pszOutBuffer;
 	BOOL  bResults = FALSE;
 	HINTERNET  hSession = NULL,
 		hConnect = NULL,
@@ -54,19 +54,18 @@ std::string winhttpget(LPCWSTR host, LPCWSTR object, bool isHTTPS) {
 					GetLastError());
 
 			// Allocate space for the buffer.
-			pszOutBuffer = new char[dwSize + 1];
+			std::unique_ptr<char[]> pszOutBuffer{ new char[dwSize + 1] };
 			// Read the data.
-			ZeroMemory(pszOutBuffer, dwSize + 1);
+			ZeroMemory(pszOutBuffer.get(), dwSize + 1);
 
-			if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer,
+			if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer.get(),
 				dwSize, &dwDownloaded))
 				printf("Error %u in WinHttpReadData.\n", GetLastError());
 			else {
-				r += pszOutBuffer;
+				r += pszOutBuffer.get();
 			}
 
-			// Free the memory allocated to the buffer.
-			delete[] pszOutBuffer;
+			// Free the memory allocated to the buffer automatically.
 		} while (dwSize > 0);
 	}
 
